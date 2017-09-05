@@ -1,0 +1,8 @@
+language: java
+services: mysql
+before_install:
+  - git clone https://www.github.com/augustbonds/hops-metadata-dal
+  - cd hops-metadata-dal && git checkout HOPS-64-travis && mvn install && cd ..
+  - mysql -u root -e "CREATE DATABASE hop_travis"
+  - mysql -u root hop_travis < schema/travis.sql
+install: mvn install -Pndb
