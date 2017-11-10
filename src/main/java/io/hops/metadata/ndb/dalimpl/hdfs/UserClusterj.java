@@ -76,5 +76,10 @@ public class UserClusterj implements TablesDef.UsersTableDef, UserDataAccess<Use
     MySQLQueryHelper.execute(query);
     return getUser(userName);
   }
-
+  
+  @Override
+  public User removeUser(int userId) throws StorageException {
+    return null; //TODO gotta implement this shit
+  }
+  
 }
