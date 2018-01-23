@@ -89,6 +89,9 @@ CREATE TABLE `hdfs_inodes` (
   `subtree_locked` tinyint DEFAULT NULL,
   `file_stored_in_db` tinyint(4) NOT NULL DEFAULT '0',
   `logical_time` int(11) NOT NULL DEFAULT '0',
+  `ace_1` int(11) NOT NULL DEFAULT '-1',
+  `ace_2` int(11) NOT NULL DEFAULT '-1',
+  `has_more_aces` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`partition_id`,`parent_id`,`name`),
   KEY `pidex` (`parent_id`),
   KEY `inode_idx` (`id`),
@@ -97,6 +100,20 @@ CREATE TABLE `hdfs_inodes` (
 ) ENGINE=ndbcluster DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs COMMENT='NDB_TABLE=READ_BACKUP=1'
 /*!50100 PARTITION BY KEY (partition_id) */  $$
 
+delimiter $$
+
+CREATE TABLE `hdfs_aces` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `inode_id` int(11) NOT NULL,
+  `subject` VARCHAR(100) NOT NULL,
+  `type` int NOT NULL DEFAULT '0',
+  `is_default` tinyint NOT NULL DEFAULT '0',
+  `permission` int NOT NULL DEFAULT '0',
+  `index` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `inode_idx` (`inode_id`)
+) ENGINE=ndbcluster DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs COMMENT='NDB_TABLE=READ_BACKUP=1'
+  /*!50100 PARTITION BY KEY (id) */  $$
 delimiter $$
 
 drop procedure if exists simpleproc$$
@@ -110,7 +127,7 @@ BEGIN
 
 	SELECT count(LOGFILE_GROUP_NAME) INTO lc FROM INFORMATION_SCHEMA.FILES where LOGFILE_GROUP_NAME="lg_1";
 	IF (lc = 0) THEN
-	    CREATE LOGFILE GROUP lg_1 ADD UNDOFILE 'undo_log_0.log' INITIAL_SIZE = 2048M ENGINE ndbcluster;
+	    CREATE LOGFILE GROUP lg_1 ADD UNDOFILE 'undo_log_0.log' INITIAL_SIZE = 128M ENGINE ndbcluster;
 	ELSE
 		select "The LogFile has already been created" as "";
 	END IF;
@@ -118,7 +135,8 @@ BEGIN
 
 	SELECT count(TABLESPACE_NAME) INTO tc FROM INFORMATION_SCHEMA.FILES where TABLESPACE_NAME="ts_1";
 	IF (tc = 0) THEN
-		CREATE TABLESPACE ts_1 ADD datafile 'ts_1_data_file_0.dat' use LOGFILE GROUP lg_1 INITIAL_SIZE = 2048M  ENGINE ndbcluster;
+		CREATE TABLESPACE ts_1 ADD datafile 'ts_1_data_file_0.dat' use LOGFILE GROUP lg_1 INITIAL_SIZE = 128M  ENGINE
+      ndbcluster;
 	ELSE
 		select "The DataFile has already been created" as "";
 	END IF;

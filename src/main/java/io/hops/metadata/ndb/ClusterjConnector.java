@@ -290,6 +290,8 @@ public class ClusterjConnector implements StorageConnector<DBSession> {
       cls = MediumOnDiskFileInodeClusterj.FileInodeDataDTO.class;
     } else if (className == LargeOnDiskInodeDataAccess.class) {
       cls = LargeOnDiskFileInodeClusterj.FileInodeDataDTO.class;
+    } else if (className == AceDataAccess.class){
+      cls = AceClusterJ.AceDto.class;
     }
 
     HopsSession session = obtainSession();
@@ -346,7 +348,7 @@ public class ClusterjConnector implements StorageConnector<DBSession> {
         MetadataLogDataAccess.class, EncodingJobsDataAccess.class,
         RepairJobsDataAccess.class, UserDataAccess.class, GroupDataAccess.class,
         UserGroupDataAccess.class,VariableDataAccess.class,
-        HashBucketDataAccess.class);
+        HashBucketDataAccess.class, AceDataAccess.class);
   }
   
   private boolean formatAll(boolean transactional) throws StorageException {
@@ -538,6 +540,8 @@ public class ClusterjConnector implements StorageConnector<DBSession> {
           } else if (e == ReservationStateDataAccess.class) {
             truncate(transactional,
                 io.hops.metadata.yarn.TablesDef.ReservationStateTableDef.TABLE_NAME);
+          } else if (e == AceDataAccess.class){
+            truncate(transactional, io.hops.metadata.hdfs.TablesDef.AcesTableDef.TABLE_NAME);
           }
         }
         MysqlServerConnector.truncateTable(transactional,
