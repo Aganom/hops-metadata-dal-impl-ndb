@@ -179,6 +179,18 @@ public class INodeClusterj implements TablesDef.INodeTableDef, INodeDataAccess<I
     byte getStoragePolicy();
 
     void setStoragePolicy(byte storagePolicy);
+    
+    @Column(name = ACE_1_ID)
+    int getAce1Id();
+    void setAce1Id(int ace1Id);
+    
+    @Column(name = ACE_2_ID)
+    int getAce2Id();
+    void setAce2Id(int ace2Id);
+    
+    @Column(name = HAS_MORE_ACES)
+    byte getHasMoreAces();
+    void setHasMoreAces(byte hasMoreAces);
   }
 
   private ClusterjConnector connector = ClusterjConnector.getInstance();
@@ -661,6 +673,9 @@ public class INodeClusterj implements TablesDef.INodeTableDef, INodeDataAccess<I
         persistable.getSize(), NdbBoolean.convert(persistable
         .getFileStoredInDd()), persistable.getLogicalTime(),
         persistable.getStoragePolicy());
+    node.setHasMoreAces(NdbBoolean.convert(persistable.getHasMoreAces()));
+    node.setAce1Id(persistable.getAce1Id());
+    node.setAce2Id(persistable.getAce2Id());
     return node;
   }
 
@@ -690,6 +705,9 @@ public class INodeClusterj implements TablesDef.INodeTableDef, INodeDataAccess<I
     persistable.setPartitionId(inode.getPartitionId());
     persistable.setLogicalTime(inode.getLogicalTime());
     persistable.setStoragePolicy(inode.getStoragePolicy());
+    persistable.setHasMoreAces(NdbBoolean.convert(inode.hasMoreAces()));
+    persistable.setAce1Id(inode.getAce1Id());
+    persistable.setAce2Id(inode.getAce2Id());
   }
 
   private void explain(HopsQuery<InodeDTO> query) {
