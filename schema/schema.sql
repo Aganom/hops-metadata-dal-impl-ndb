@@ -110,9 +110,6 @@ CREATE TABLE `hdfs_inodes` (
   `under_construction` tinyint NOT NULL,
   `subtree_locked` tinyint DEFAULT NULL,
   `file_stored_in_db` tinyint(4) NOT NULL DEFAULT '0',
-  `ace_1` int(11) NOT NULL DEFAULT '-1',
-  `ace_2` int(11) NOT NULL DEFAULT '-1',
-  `has_more_aces` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`partition_id`,`parent_id`,`name`),
   KEY `pidex` (`parent_id`),
   KEY `inode_idx` (`id`),
@@ -121,20 +118,6 @@ CREATE TABLE `hdfs_inodes` (
 ) ENGINE=ndbcluster DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs COMMENT='NDB_TABLE=READ_BACKUP=1'
 /*!50100 PARTITION BY KEY (partition_id) */  $$
 
-delimiter $$
-
-CREATE TABLE `hdfs_aces` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `inode_id` int(11) NOT NULL,
-  `subject` VARCHAR(100) NOT NULL,
-  `type` int NOT NULL DEFAULT '0',
-  `is_default` tinyint NOT NULL DEFAULT '0',
-  `permission` int NOT NULL DEFAULT '0',
-  `index` int NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `inode_idx` (`inode_id`)
-) ENGINE=ndbcluster DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs COMMENT='NDB_TABLE=READ_BACKUP=1'
-  /*!50100 PARTITION BY KEY (id) */  $$
 delimiter $$
 
 drop procedure if exists simpleproc$$
