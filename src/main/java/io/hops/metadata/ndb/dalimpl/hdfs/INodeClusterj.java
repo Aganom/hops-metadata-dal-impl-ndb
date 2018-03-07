@@ -18,25 +18,21 @@
  */
 package io.hops.metadata.ndb.dalimpl.hdfs;
 
-import com.google.common.collect.Lists;
 import com.mysql.clusterj.LockMode;
 import com.mysql.clusterj.annotation.Column;
 import com.mysql.clusterj.annotation.Index;
 import com.mysql.clusterj.annotation.PartitionKey;
 import com.mysql.clusterj.annotation.PersistenceCapable;
 import com.mysql.clusterj.annotation.PrimaryKey;
-import io.hops.exception.HopsUserDoesNotExist;
 import io.hops.exception.StorageException;
 import io.hops.metadata.hdfs.TablesDef;
 import io.hops.metadata.hdfs.dal.INodeDataAccess;
 import io.hops.metadata.hdfs.entity.INode;
-import io.hops.metadata.hdfs.entity.INodeBase;
 import io.hops.metadata.hdfs.entity.INodeIdentifier;
 import io.hops.metadata.hdfs.entity.MetadataLogEntry;
 import io.hops.metadata.hdfs.entity.ProjectedINode;
 import io.hops.metadata.ndb.ClusterjConnector;
 import io.hops.metadata.ndb.NdbBoolean;
-import io.hops.metadata.ndb.mysqlserver.HopsSQLExceptionHelper;
 import io.hops.metadata.ndb.mysqlserver.MySQLQueryHelper;
 import io.hops.metadata.ndb.mysqlserver.MysqlServerConnector;
 import io.hops.metadata.ndb.wrapper.HopsPredicate;
@@ -44,13 +40,7 @@ import io.hops.metadata.ndb.wrapper.HopsQuery;
 import io.hops.metadata.ndb.wrapper.HopsQueryBuilder;
 import io.hops.metadata.ndb.wrapper.HopsQueryDomainType;
 import io.hops.metadata.ndb.wrapper.HopsSession;
-import io.hops.util.ByteArray;
-import org.apache.log4j.Logger;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 public class INodeClusterj implements TablesDef.INodeTableDef, INodeDataAccess<INode> {
@@ -180,11 +170,11 @@ public class INodeClusterj implements TablesDef.INodeTableDef, INodeDataAccess<I
 
     void setStoragePolicy(byte storagePolicy);
     
-    @Column(name = ACE_1_ID)
+    @Column(name = HAS_ACE_1)
     int getAce1Id();
     void setAce1Id(int ace1Id);
     
-    @Column(name = ACE_2_ID)
+    @Column(name = HAS_ACE_2)
     int getAce2Id();
     void setAce2Id(int ace2Id);
     

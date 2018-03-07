@@ -173,7 +173,7 @@ public class AceClusterJ implements TablesDef.AcesTableDef, AceDataAccess<Ace> {
       for (Ace ace : removed) {
         Object[] pk = new Object[2];
         pk[0] = ace.getInodeId();
-        pk[2] = ace.getId();
+        pk[1] = ace.getId();
         AceDto persistable = session.newInstance(AceDto.class, pk);
         deletions.add(persistable);
       }
@@ -207,7 +207,7 @@ public class AceClusterJ implements TablesDef.AcesTableDef, AceDataAccess<Ace> {
     Ace.AceType type = Ace.AceType.valueOf(dto.getType());
     int index = dto.getIndex();
     
-    return new Ace(id, inode, subject, type, isDefault, permission, index);
+    return new Ace(inode, index, subject, type, isDefault, permission);
   }
   
   private AceDto createPersistable(HopsSession session, Ace from) throws StorageException {
