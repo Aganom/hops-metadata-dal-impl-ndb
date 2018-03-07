@@ -33,6 +33,7 @@ import io.hops.metadata.ndb.wrapper.HopsQueryDomainType;
 import io.hops.metadata.ndb.wrapper.HopsSession;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class AceClusterJ implements TablesDef.AcesTableDef, AceDataAccess<Ace> {
@@ -160,6 +161,32 @@ public class AceClusterJ implements TablesDef.AcesTableDef, AceDataAccess<Ace> {
       return aces;
     } finally {
       session.release(dtos);
+    }
+  }
+  
+  @Override
+  public void prepare(Collection<Ace> removed, Collection<Ace> modified) throws StorageException {
+    HopsSession session = connector.obtainSession();
+    List<AceDto> changes = new ArrayList<>();
+    List<AceDto> deletions = new ArrayList<>();
+    try {
+      for (Ace ace : removed) {
+        Object[] pk = new Object[2];
+        pk[0] = ace.getInodeId();
+        pk[2] = ace.getId();
+        AceDto persistable = session.newInstance(AceDto.class, pk);
+        deletions.add(persistable);
+      }
+      
+      for (Ace ace : modified) {
+        AceDto persistable = createPersistable(session, ace);
+        changes.add(persistable);
+      }
+      session.deletePersistentAll(deletions);
+      session.savePersistentAll(changes);
+    } finally {
+      session.release(deletions);
+      session.release(changes);
     }
   }
   

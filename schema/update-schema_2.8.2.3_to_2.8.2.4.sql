@@ -12,14 +12,14 @@ ALTER TABLE `hdfs_inodes` ADD COLUMN `ace_2` int(11) NOT NULL DEFAULT '-1';
 ALTER TABLE `hdfs_inodes` ADD COLUMN `has_more_aces` tinyint NOT NULL DEFAULT '0';
 
 CREATE TABLE `hdfs_aces` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL,
   `inode_id` int(11) NOT NULL,
   `subject` VARCHAR(100) NOT NULL,
   `type` int NOT NULL DEFAULT '0',
   `is_default` tinyint NOT NULL DEFAULT '0',
   `permission` int NOT NULL DEFAULT '0',
   `index` int NOT NULL,
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`inode_id`,`id`),
   KEY `inode_idx` (`inode_id`)
 ) ENGINE=ndbcluster DEFAULT CHARSET=latin1 COLLATE=latin1_general_cs COMMENT='NDB_TABLE=READ_BACKUP=1'
-  /*!50100 PARTITION BY KEY (id) */
+  /*!50100 PARTITION BY KEY (inode_id) */
