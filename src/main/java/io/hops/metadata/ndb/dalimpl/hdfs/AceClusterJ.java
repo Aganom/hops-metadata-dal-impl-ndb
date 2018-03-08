@@ -43,13 +43,15 @@ public class AceClusterJ implements TablesDef.AcesTableDef, AceDataAccess<Ace> {
   public interface AceDto {
     
     @PrimaryKey
-    @Column(name = ID)
-    int getId();
-    void setId(int id);
-    
     @Column(name = INODE_ID)
     int getInodeId();
     void setInodeId(int inodeId);
+  
+    @PrimaryKey
+    @Column(name = INDEX)
+    int getIndex();
+    
+    void setIndex(int index);
     
     @Column(name = SUBJECT)
     String getSubject();
@@ -66,30 +68,6 @@ public class AceClusterJ implements TablesDef.AcesTableDef, AceDataAccess<Ace> {
     @Column(name = PERMISSION)
     int getPermission();
     void setPermission(int permission);
-    
-    @Column(name = INDEX)
-    int getIndex();
-    void setIndex(int index);
-  }
-  
-  @Override
-  public Ace addAce(Ace toAdd)
-      throws StorageException {
-    HopsSession session = connector.obtainSession();
-  
-    AceDto persistable = session.newInstance(AceDto.class);
-    persistable.setPermission(toAdd.getPermission());
-    persistable.setIsDefault(NdbBoolean.convert(toAdd.isDefault()));
-    persistable.setInodeId(toAdd.getInodeId());
-    persistable.setSubject(toAdd.getSubject());
-    persistable.setType(toAdd.getType().getValue());
-    persistable.setIndex(toAdd.getIndex());
-    
-    AceDto inserted = session.makePersistent(persistable);
-    
-    Ace toReturn = fromDto(inserted);
-    session.release(inserted);
-    return toReturn;
   }
   
   @Override
@@ -111,48 +89,18 @@ public class AceClusterJ implements TablesDef.AcesTableDef, AceDataAccess<Ace> {
       session.release(result);
     }
     return toReturn;
-  
   }
   
   @Override
-  public void removeAcesForInodeId(int inodeId) throws StorageException {
+  public List<Ace> getAcesByPKBatched(int inodeId, int[] ids) throws StorageException {
     HopsSession session = connector.obtainSession();
-    List<AceDto> toDelete = new ArrayList<>();
-    List<Ace> aces = getAcesByInodeId(inodeId);
-    for (Ace ace : aces) {
-      AceDto aceDto = createPersistable(session, ace);
-      toDelete.add(aceDto);
-    }
-    session.deletePersistentAll(toDelete);
-    session.release(toDelete);
-  }
-  
-  @Override
-  public Ace getAceByPK(int id, int inodeId) throws StorageException {
-    HopsSession session = connector.obtainSession();
-    Object[] pk = new Object[2];
-    pk[0] = id;
-    pk[1] = inodeId;
-  
-    AceDto result = session.find(AceDto.class, pk);
-    if (result != null) {
-      Ace ace = fromDto(result);
-      session.release(result);
-      return ace;
-    } else {
-      return null;
-    }
-  }
-  
-  @Override
-  public List<Ace> getAcesByPKBatched(int[] ids, int inodeId) throws StorageException {
-    HopsSession session = connector.obtainSession();
-  
+    
     List<AceDto> dtos = new ArrayList<>();
     try {
       for (int i = 0; i < ids.length; i++) {
         AceDto dto = session.newInstance(AceDto.class);
-        dto.setId(ids[i]);
+        dto.setInodeId(inodeId);
+        dto.setIndex(ids[i]);
         dto = session.load(dto);
         dtos.add(dto);
       }
@@ -165,17 +113,24 @@ public class AceClusterJ implements TablesDef.AcesTableDef, AceDataAccess<Ace> {
   }
   
   @Override
-  public void prepare(Collection<Ace> removed, Collection<Ace> modified) throws StorageException {
+  public void prepare(Collection<Ace> removed, Collection<Ace> newed, Collection<Ace> modified) throws
+      StorageException {
     HopsSession session = connector.obtainSession();
-    List<AceDto> changes = new ArrayList<>();
     List<AceDto> deletions = new ArrayList<>();
+    List<AceDto> additions = new ArrayList<>();
+    List<AceDto> changes = new ArrayList<>();
     try {
       for (Ace ace : removed) {
         Object[] pk = new Object[2];
         pk[0] = ace.getInodeId();
-        pk[1] = ace.getId();
+        pk[1] = ace.getIndex();
         AceDto persistable = session.newInstance(AceDto.class, pk);
         deletions.add(persistable);
+      }
+      
+      for (Ace ace : newed) {
+        AceDto toAdd = createPersistable(session, ace);
+        additions.add(toAdd);
       }
       
       for (Ace ace : modified) {
@@ -183,9 +138,11 @@ public class AceClusterJ implements TablesDef.AcesTableDef, AceDataAccess<Ace> {
         changes.add(persistable);
       }
       session.deletePersistentAll(deletions);
+      session.savePersistentAll(additions);
       session.savePersistentAll(changes);
     } finally {
       session.release(deletions);
+      session.release(additions);
       session.release(changes);
     }
   }
@@ -199,26 +156,24 @@ public class AceClusterJ implements TablesDef.AcesTableDef, AceDataAccess<Ace> {
   }
   
   private Ace fromDto(AceDto dto){
-    int id = dto.getId();
     int inode = dto.getInodeId();
+    int index = dto.getIndex();
     String subject = dto.getSubject();
     boolean isDefault = NdbBoolean.convert(dto.getIsDefault());
     int permission = dto.getPermission();
     Ace.AceType type = Ace.AceType.valueOf(dto.getType());
-    int index = dto.getIndex();
     
     return new Ace(inode, index, subject, type, isDefault, permission);
   }
   
   private AceDto createPersistable(HopsSession session, Ace from) throws StorageException {
     AceDto aceDto = session.newInstance(AceDto.class);
-    aceDto.setId(from.getId());
     aceDto.setInodeId(from.getInodeId());
+    aceDto.setIndex(from.getIndex());
     aceDto.setSubject(from.getSubject());
     aceDto.setIsDefault(NdbBoolean.convert(from.isDefault()));
     aceDto.setPermission(from.getPermission());
     aceDto.setType(from.getType().getValue());
-    aceDto.setIndex(from.getIndex());
     return aceDto;
   }
 }
