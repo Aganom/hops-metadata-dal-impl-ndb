@@ -7,9 +7,7 @@ CREATE TABLE `hdfs_storages` (
 
 ALTER TABLE `hdfs_inodes` ADD COLUMN `storage_policy` bit(8) NOT NULL DEFAULT '0';
 
-ALTER TABLE `hdfs_inodes` ADD COLUMN `has_ace_1` tinyint NOT NULL DEFAULT '0';
-ALTER TABLE `hdfs_inodes` ADD COLUMN `has_ace_2` tinyint NOT NULL DEFAULT '0';
-ALTER TABLE `hdfs_inodes` ADD COLUMN `has_more_aces` tinyint NOT NULL DEFAULT '0';
+ALTER TABLE `hdfs_inodes` ADD COLUMN `num_aces` int(11) NOT NULL DEFAULT '0';
 
 CREATE TABLE `hdfs_aces` (
   `inode_id` int(11) NOT NULL,

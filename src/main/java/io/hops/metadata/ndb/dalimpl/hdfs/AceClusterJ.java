@@ -26,10 +26,6 @@ import io.hops.metadata.hdfs.dal.AceDataAccess;
 import io.hops.metadata.hdfs.entity.Ace;
 import io.hops.metadata.ndb.ClusterjConnector;
 import io.hops.metadata.ndb.NdbBoolean;
-import io.hops.metadata.ndb.wrapper.HopsPredicate;
-import io.hops.metadata.ndb.wrapper.HopsQuery;
-import io.hops.metadata.ndb.wrapper.HopsQueryBuilder;
-import io.hops.metadata.ndb.wrapper.HopsQueryDomainType;
 import io.hops.metadata.ndb.wrapper.HopsSession;
 
 import java.util.ArrayList;
@@ -68,27 +64,6 @@ public class AceClusterJ implements TablesDef.AcesTableDef, AceDataAccess<Ace> {
     @Column(name = PERMISSION)
     int getPermission();
     void setPermission(int permission);
-  }
-  
-  @Override
-  public List<Ace> getAcesByInodeId(int inodeId) throws StorageException {
-    HopsSession session = connector.obtainSession();
-    List<AceDto> queryResults;
-    HopsQueryBuilder qb = session.getQueryBuilder();
-    HopsQueryDomainType<AceDto> dobj =
-        qb.createQueryDefinition(AceDto.class);
-    HopsPredicate pred1 = dobj.get("inodeId").equal(dobj.param("inodeIdParam"));
-    dobj.where(pred1);
-    HopsQuery<AceDto> query = session.createQuery(dobj);
-    query.setParameter("inodeIdParam", inodeId);
-
-    queryResults = query.getResultList();
-    List<Ace> toReturn = new ArrayList<>();
-    for (AceDto result : queryResults){
-      toReturn.add(fromDto(result));
-      session.release(result);
-    }
-    return toReturn;
   }
   
   @Override
